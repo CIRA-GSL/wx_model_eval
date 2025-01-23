@@ -13,7 +13,7 @@ import xarray
 import matplotlib
 matplotlib.use('agg')
 from matplotlib import pyplot
-from wx_model_eval.utils import file_system_utils
+from wx_model_eval.outside_code import file_system_utils
 from wx_model_eval.utils import evaluation
 from wx_model_eval.scripts import \
     plot_gridded_evaluation as plot_gridded_eval
@@ -109,8 +109,7 @@ BY_HOUR_HELP_STRING = (
 )
 TARGET_FIELDS_HELP_STRING = (
     'List of target fields.  For each pair of target field / metric, this '
-    'script will produce one plot.  Each target field must be accepted by '
-    '`urma_utils.check_field_name`.'
+    'script will produce one plot.'
 )
 METRICS_HELP_STRING = (
     'List of metrics.  For each pair of target field / metric, this script '

@@ -13,23 +13,19 @@ from wx_model_eval.outside_code import \
     temperature_conversions as temperature_conv
 from wx_model_eval.outside_code import file_system_utils
 from wx_model_eval.outside_code import error_checking
-from wx_model_eval.io import urma_io
+from wx_model_eval.io import normalization_io
 from wx_model_eval.io import prediction_io
-from wx_model_eval.utils import urma_utils
+from wx_model_eval.utils import target_field_utils
 from wx_model_eval.utils import evaluation
 from wx_model_eval.plotting import evaluation_plotting as eval_plotting
 
 TARGET_FIELD_NAME_TO_VERBOSE = {
-    urma_utils.TEMPERATURE_2METRE_NAME: r'2-m temperature ($^{\circ}$C)',
-    urma_utils.DEWPOINT_2METRE_NAME: r'2-m dewpoint ($^{\circ}$C)',
-    urma_utils.U_WIND_10METRE_NAME: r'10-m zonal wind (m s$^{-1}$)',
-    urma_utils.V_WIND_10METRE_NAME: r'10-m meridional wind (m s$^{-1}$)',
-    urma_utils.WIND_GUST_10METRE_NAME: r'10-m wind gust (m s$^{-1}$)'
+    target_field_utils.TEMPERATURE_2METRE_NAME: r'2-m temperature ($^{\circ}$C)',
+    target_field_utils.DEWPOINT_2METRE_NAME: r'2-m dewpoint ($^{\circ}$C)',
+    target_field_utils.U_WIND_10METRE_NAME: r'10-m zonal wind (m s$^{-1}$)',
+    target_field_utils.V_WIND_10METRE_NAME: r'10-m meridional wind (m s$^{-1}$)',
+    target_field_utils.WIND_GUST_10METRE_NAME: r'10-m wind gust (m s$^{-1}$)'
 }
-
-CELSIUS_FIELD_NAMES = [
-    urma_utils.TEMPERATURE_2METRE_NAME, urma_utils.DEWPOINT_2METRE_NAME
-]
 
 MONTH_INDEX_TO_STRING = {
     1: 'Jan',
@@ -89,7 +85,7 @@ BY_HOUR_HELP_STRING = (
 )
 TARGET_NORM_FILE_HELP_STRING = (
     'Path to file with normalization parameters for target fields.  Will be '
-    'read by `urma_io.read_normalization_file`.'
+    'read by `normalization_io.read_normalization_file`.'
 )
 PLOT_FULL_DISTS_HELP_STRING = (
     'Boolean flag.  If 1, for each evaluation set, will plot full error '
@@ -526,23 +522,25 @@ def _run(eval_file_name_or_pattern, by_month, by_hour,
     print('Reading normalization params from: "{0:s}"...'.format(
         target_normalization_file_name
     ))
-    target_norm_param_table_xarray = urma_io.read_normalization_file(
+    target_norm_param_table_xarray = normalization_io.read_normalization_file(
         target_normalization_file_name
     )
     tnpt = target_norm_param_table_xarray
 
     these_indices = numpy.array([
-        numpy.where(tnpt.coords[urma_utils.FIELD_DIM].values == f)[0][0]
+        numpy.where(tnpt.coords[normalization_io.FIELD_DIM].values == f)[0][0]
         for f in target_field_names
     ], dtype=int)
 
     climo_mean_target_values = (
-        tnpt[urma_utils.MEAN_VALUE_KEY].values[these_indices]
+        tnpt[normalization_io.MEAN_VALUE_KEY].values[these_indices]
     )
 
-    celsius_indices = numpy.array(
-        [f in CELSIUS_FIELD_NAMES for f in target_field_names], dtype=bool
-    )
+    celsius_indices = numpy.array([
+        target_field_utils.is_actually_stored_in_celsius(f)
+        for f in target_field_names
+    ], dtype=bool)
+
     for j in celsius_indices:
         climo_mean_target_values[j] = temperature_conv.kelvins_to_celsius(
             climo_mean_target_values[j]

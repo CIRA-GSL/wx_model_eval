@@ -7,14 +7,14 @@ from matplotlib import pyplot
 from wx_model_eval.utils import pit_histogram_utils as pith_utils
 from wx_model_eval.utils import spread_skill_utils as ss_utils
 from wx_model_eval.utils import discard_test_utils as dt_utils
-from wx_model_eval.utils import urma_utils
+from wx_model_eval.utils import target_field_utils
 
 FIELD_NAME_TO_TITLE = {
-    urma_utils.TEMPERATURE_2METRE_NAME: r'2-m temperature ($^{\circ}$C)',
-    urma_utils.DEWPOINT_2METRE_NAME: r'2-m dewpoint ($^{\circ}$C)',
-    urma_utils.U_WIND_10METRE_NAME: r'10-m zonal wind (m s$^{-1}$)',
-    urma_utils.V_WIND_10METRE_NAME: r'10-m meridional wind (m s$^{-1}$)',
-    urma_utils.WIND_GUST_10METRE_NAME: r'10-m wind gust (m s$^{-1}$)'
+    target_field_utils.TEMPERATURE_2METRE_NAME: r'2-m temperature ($^{\circ}$C)',
+    target_field_utils.DEWPOINT_2METRE_NAME: r'2-m dewpoint ($^{\circ}$C)',
+    target_field_utils.U_WIND_10METRE_NAME: r'10-m zonal wind (m s$^{-1}$)',
+    target_field_utils.V_WIND_10METRE_NAME: r'10-m meridional wind (m s$^{-1}$)',
+    target_field_utils.WIND_GUST_10METRE_NAME: r'10-m wind gust (m s$^{-1}$)'
 }
 
 REFERENCE_LINE_COLOUR = numpy.full(3, 152. / 255)

@@ -2,8 +2,8 @@
 
 import numpy
 import xarray
-from wx_model_eval.utils import file_system_utils
-from wx_model_eval.utils import error_checking
+from wx_model_eval.outside_code import file_system_utils
+from wx_model_eval.outside_code import error_checking
 from wx_model_eval.utils import spread_skill_utils as ss_utils
 
 TOLERANCE = 1e-6

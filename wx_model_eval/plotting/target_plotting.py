@@ -9,7 +9,7 @@ from wx_model_eval.outside_code import grids
 from wx_model_eval.outside_code import longitude_conversion as lng_conversion
 from wx_model_eval.outside_code import error_checking
 from wx_model_eval.outside_code import gg_plotting_utils
-from wx_model_eval.utils import urma_utils
+from wx_model_eval.utils import target_field_utils
 
 # TODO(thunderhoser): I might want code in this module to convert temperature
 # and dewpoint to plotting units (from K to deg C).  But for now, all the
@@ -19,11 +19,11 @@ TOLERANCE = 1e-6
 NAN_COLOUR = numpy.full(3, 152. / 255)
 
 FIELD_NAME_TO_FANCY = {
-    urma_utils.TEMPERATURE_2METRE_NAME: r'2-m temperature ($^{\circ}$C)',
-    urma_utils.DEWPOINT_2METRE_NAME: r'2-m dewpoint ($^{\circ}$C)',
-    urma_utils.U_WIND_10METRE_NAME: r'10-m zonal wind (m s$^{-1}$)',
-    urma_utils.V_WIND_10METRE_NAME: r'10-m meridional wind (m s$^{-1}$)',
-    urma_utils.WIND_GUST_10METRE_NAME: r'10-m wind gust (m s$^{-1}$)'
+    target_field_utils.TEMPERATURE_2METRE_NAME: r'2-m temperature ($^{\circ}$C)',
+    target_field_utils.DEWPOINT_2METRE_NAME: r'2-m dewpoint ($^{\circ}$C)',
+    target_field_utils.U_WIND_10METRE_NAME: r'10-m zonal wind (m s$^{-1}$)',
+    target_field_utils.V_WIND_10METRE_NAME: r'10-m meridional wind (m s$^{-1}$)',
+    target_field_utils.WIND_GUST_10METRE_NAME: r'10-m wind gust (m s$^{-1}$)'
 }
 
 
@@ -105,43 +105,36 @@ def _grid_points_to_edges_2d(grid_point_coord_matrix):
 def field_to_colour_scheme(field_name, min_value, max_value):
     """Returns colour scheme for one target field.
 
-    :param field_name: Field name.  Must be accepted by
-        `urma_utils.check_field_name`.
+    :param field_name: Field name.
     :param min_value: Minimum value in colour scheme.
     :param max_value: Max value in colour scheme.
     :return: colour_map_object: Instance of `matplotlib.colors.ListedColormap`.
     :return: colour_norm_object: Instance of `matplotlib.colors.BoundaryNorm`.
     """
 
-    urma_utils.check_field_name(field_name)
-
-    if field_name == urma_utils.WIND_GUST_10METRE_NAME:
+    if target_field_utils.is_wind_gust(field_name):
         min_value = max([min_value, 0.])
 
-    if field_name in [
-            urma_utils.TEMPERATURE_2METRE_NAME,
-            urma_utils.DEWPOINT_2METRE_NAME,
-            urma_utils.WIND_GUST_10METRE_NAME
-    ]:
-        colour_map_object = pyplot.get_cmap('viridis')
-        colour_map_object.set_bad(NAN_COLOUR)
+    if target_field_utils.is_wind_component(field_name):
+        max_absolute_value = max([
+            numpy.absolute(min_value),
+            numpy.absolute(max_value)
+        ])
+        max_absolute_value = max([max_absolute_value, TOLERANCE])
 
-        max_value = max([max_value, min_value + TOLERANCE])
-        colour_norm_object = pyplot.Normalize(vmin=min_value, vmax=max_value)
+        colour_map_object = pyplot.get_cmap('seismic')
+        colour_map_object.set_bad(NAN_COLOUR)
+        colour_norm_object = pyplot.Normalize(
+            vmin=-1 * max_absolute_value, vmax=max_absolute_value
+        )
 
         return colour_map_object, colour_norm_object
 
-    max_absolute_value = max([
-        numpy.absolute(min_value),
-        numpy.absolute(max_value)
-    ])
-    max_absolute_value = max([max_absolute_value, TOLERANCE])
-
-    colour_map_object = pyplot.get_cmap('seismic')
+    colour_map_object = pyplot.get_cmap('viridis')
     colour_map_object.set_bad(NAN_COLOUR)
-    colour_norm_object = pyplot.Normalize(
-        vmin=-1 * max_absolute_value, vmax=max_absolute_value
-    )
+
+    max_value = max([max_value, min_value + TOLERANCE])
+    colour_norm_object = pyplot.Normalize(vmin=min_value, vmax=max_value)
 
     return colour_map_object, colour_norm_object
 

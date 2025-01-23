@@ -4,7 +4,7 @@ import argparse
 import matplotlib
 matplotlib.use('agg')
 from matplotlib import pyplot
-from wx_model_eval.utils import file_system_utils
+from wx_model_eval.outside_code import file_system_utils
 from wx_model_eval.utils import pit_histogram_utils as pith_utils
 from wx_model_eval.plotting import \
     uq_evaluation_plotting as uq_eval_plotting

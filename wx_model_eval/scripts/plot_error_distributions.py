@@ -22,7 +22,7 @@ matplotlib.use('agg')
 from matplotlib import pyplot
 from scipy.stats import gaussian_kde
 from wx_model_eval.io import prediction_io
-from wx_model_eval.utils import urma_utils
+from wx_model_eval.utils import target_field_utils
 from wx_model_eval.utils import evaluation
 from wx_model_eval.outside_code import time_conversion
 from wx_model_eval.outside_code import file_system_utils
@@ -32,11 +32,11 @@ HOURS_TO_SECONDS = 3600
 TIME_FORMAT = '%Y-%m-%d-%H'
 
 TARGET_FIELD_NAME_TO_VERBOSE = {
-    urma_utils.TEMPERATURE_2METRE_NAME: r'2-m temperature ($^{\circ}$C)',
-    urma_utils.DEWPOINT_2METRE_NAME: r'2-m dewpoint ($^{\circ}$C)',
-    urma_utils.U_WIND_10METRE_NAME: r'10-m zonal wind (m s$^{-1}$)',
-    urma_utils.V_WIND_10METRE_NAME: r'10-m meridional wind (m s$^{-1}$)',
-    urma_utils.WIND_GUST_10METRE_NAME: r'10-m wind gust (m s$^{-1}$)'
+    target_field_utils.TEMPERATURE_2METRE_NAME: r'2-m temperature ($^{\circ}$C)',
+    target_field_utils.DEWPOINT_2METRE_NAME: r'2-m dewpoint ($^{\circ}$C)',
+    target_field_utils.U_WIND_10METRE_NAME: r'10-m zonal wind (m s$^{-1}$)',
+    target_field_utils.V_WIND_10METRE_NAME: r'10-m meridional wind (m s$^{-1}$)',
+    target_field_utils.WIND_GUST_10METRE_NAME: r'10-m wind gust (m s$^{-1}$)'
 }
 
 VIOLIN_LINE_WIDTH = 1.5
@@ -61,6 +61,7 @@ pyplot.rc('figure', titlesize=DEFAULT_FONT_SIZE)
 
 INPUT_DIR_ARG_NAME = 'input_prediction_dir_name'
 INIT_TIME_LIMITS_ARG_NAME = 'init_time_limit_strings'
+LEAD_TIME_ARG_NAME = 'model_lead_time_hours'  # TODO(thunderhoser): Should be metadata stored in prediction files.
 EVALUATE_MONTH_ARG_NAME = 'evaluate_month'
 EVALUATE_HOUR_ARG_NAME = 'evaluate_hour'
 TARGET_FIELDS_ARG_NAME = 'target_field_names'
@@ -82,6 +83,7 @@ INIT_TIME_LIMITS_HELP_STRING = (
     'List of two initialization times, specifying the beginning and end of the '
     'evaluation period.  Time format is "yyyy-mm-dd-HH".'
 )
+LEAD_TIME_HELP_STRING = 'Model lead time.'
 EVALUATE_MONTH_HELP_STRING = (
     'Will evaluate only forecasts valid in this month (ranging from '
     '1...12).  If you want to evaluate forecasts regardless of month, leave '
@@ -92,10 +94,7 @@ EVALUATE_HOUR_HELP_STRING = (
     '0...23).  If you want to evaluate forecasts regardless of hour, leave '
     'this argument alone.'
 )
-TARGET_FIELDS_HELP_STRING = (
-    'List of target fields to be evaluated.  Each one must be accepted by '
-    '`urma_utils.check_field_name`.'
-)
+TARGET_FIELDS_HELP_STRING = 'List of target fields to be evaluated.'
 NUM_BINS_HELP_STRING = (
     'length-T list with number of bins in violin/box plot for each target '
     'variable, where T = length of {0:s}.'
@@ -154,6 +153,10 @@ INPUT_ARG_PARSER.add_argument(
 INPUT_ARG_PARSER.add_argument(
     '--' + INIT_TIME_LIMITS_ARG_NAME, type=str, nargs=2, required=True,
     help=INIT_TIME_LIMITS_HELP_STRING
+)
+INPUT_ARG_PARSER.add_argument(
+    '--' + LEAD_TIME_ARG_NAME, type=int, required=False, default=48,
+    help=LEAD_TIME_HELP_STRING
 )
 INPUT_ARG_PARSER.add_argument(
     '--' + EVALUATE_MONTH_ARG_NAME, type=int, required=False, default=-1,
@@ -512,8 +515,8 @@ def _plot_error_distribution(
     return figure_object, axes_object
 
 
-def _run(prediction_dir_name, init_time_limit_strings, evaluate_month,
-         evaluate_hour, target_field_names, num_bins_by_target,
+def _run(prediction_dir_name, init_time_limit_strings, model_lead_time_hours,
+         evaluate_month, evaluate_hour, target_field_names, num_bins_by_target,
          min_bin_edge_by_target, max_bin_edge_by_target,
          violin_or_box_plots, left_tail_percentile, right_tail_percentile,
          max_num_pdf_values, output_dir_name):
@@ -523,6 +526,7 @@ def _run(prediction_dir_name, init_time_limit_strings, evaluate_month,
 
     :param prediction_dir_name: See documentation at top of this script.
     :param init_time_limit_strings: Same.
+    :param model_lead_time_hours: Same.
     :param evaluate_month: Same.
     :param evaluate_hour: Same.
     :param target_field_names: Same.
@@ -606,29 +610,12 @@ def _run(prediction_dir_name, init_time_limit_strings, evaluate_month,
             raise_error_if_all_missing=True
         )
 
-    # Subset to relevant input files, if necessary.
-    # first_prediction_table_xarray = prediction_io.read_file(
-    #     prediction_file_names[0]
-    # )
-    # first_ptx = first_prediction_table_xarray
-    #
-    # if 'model_lead_time_hours' in first_ptx.attrs:
-    #     model_lead_time_hours = first_ptx.attrs['model_lead_time_hours']
-    # else:
-    #     model_file_name = first_ptx.attrs[prediction_io.MODEL_FILE_KEY]
-    #     model_metafile_name = neural_net.find_metafile(
-    #         model_file_name=model_file_name, raise_error_if_missing=True
-    #     )
-    #
-    #     print('Reading model metadata from: "{0:s}"...'.format(
-    #         model_metafile_name
-    #     ))
-    #     model_metadata_dict = neural_net.read_metafile(model_metafile_name)
-    #     model_lead_time_hours = model_metadata_dict[
-    #         neural_net.TRAINING_OPTIONS_KEY
-    #     ][neural_net.TARGET_LEAD_TIME_KEY]
-
-    model_lead_time_hours = 48
+    first_prediction_table_xarray = prediction_io.read_file(
+        prediction_file_names[0]
+    )
+    first_ptx = first_prediction_table_xarray
+    if 'model_lead_time_hours' in first_ptx.attrs:
+        model_lead_time_hours = first_ptx.attrs['model_lead_time_hours']
 
     init_times_unix_sec = numpy.array([
         prediction_io.file_name_to_init_time(f) for f in prediction_file_names
@@ -831,6 +818,7 @@ if __name__ == '__main__':
         init_time_limit_strings=getattr(
             INPUT_ARG_OBJECT, INIT_TIME_LIMITS_ARG_NAME
         ),
+        model_lead_time_hours=getattr(INPUT_ARG_OBJECT, LEAD_TIME_ARG_NAME),
         evaluate_month=getattr(INPUT_ARG_OBJECT, EVALUATE_MONTH_ARG_NAME),
         evaluate_hour=getattr(INPUT_ARG_OBJECT, EVALUATE_HOUR_ARG_NAME),
         target_field_names=getattr(

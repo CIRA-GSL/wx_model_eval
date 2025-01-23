@@ -11,7 +11,7 @@ import matplotlib.patches
 from matplotlib import pyplot
 from wx_model_eval.outside_code import file_system_utils
 from wx_model_eval.outside_code import error_checking
-from wx_model_eval.utils import urma_utils
+from wx_model_eval.utils import target_field_utils
 from wx_model_eval.utils import evaluation
 
 DEFAULT_FONT_SIZE = 30
@@ -26,35 +26,35 @@ pyplot.rc('figure', titlesize=DEFAULT_FONT_SIZE)
 # TODO(thunderhoser): Add UQ-evaluation files to the mix.
 
 FIELD_NAME_TO_FANCY = {
-    urma_utils.TEMPERATURE_2METRE_NAME: '2-m temperature',
-    urma_utils.DEWPOINT_2METRE_NAME: '2-m dewpoint',
-    urma_utils.U_WIND_10METRE_NAME: '10-m zonal wind',
-    urma_utils.V_WIND_10METRE_NAME: '10-m meridional wind',
-    urma_utils.WIND_GUST_10METRE_NAME: '10-m wind gust'
+    target_field_utils.TEMPERATURE_2METRE_NAME: '2-m temperature',
+    target_field_utils.DEWPOINT_2METRE_NAME: '2-m dewpoint',
+    target_field_utils.U_WIND_10METRE_NAME: '10-m zonal wind',
+    target_field_utils.V_WIND_10METRE_NAME: '10-m meridional wind',
+    target_field_utils.WIND_GUST_10METRE_NAME: '10-m wind gust'
 }
 
 FIELD_NAME_TO_UNITS = {
-    urma_utils.TEMPERATURE_2METRE_NAME: r'$^{\circ}$C',
-    urma_utils.DEWPOINT_2METRE_NAME: r'$^{\circ}$C',
-    urma_utils.U_WIND_10METRE_NAME: r'm s$^{-1}$',
-    urma_utils.V_WIND_10METRE_NAME: r'm s$^{-1}$',
-    urma_utils.WIND_GUST_10METRE_NAME: r'm s$^{-1}$'
+    target_field_utils.TEMPERATURE_2METRE_NAME: r'$^{\circ}$C',
+    target_field_utils.DEWPOINT_2METRE_NAME: r'$^{\circ}$C',
+    target_field_utils.U_WIND_10METRE_NAME: r'm s$^{-1}$',
+    target_field_utils.V_WIND_10METRE_NAME: r'm s$^{-1}$',
+    target_field_utils.WIND_GUST_10METRE_NAME: r'm s$^{-1}$'
 }
 
 FIELD_NAME_TO_SQUARED_UNITS = {
-    urma_utils.TEMPERATURE_2METRE_NAME: r'$^{\circ}$C$^2$',
-    urma_utils.DEWPOINT_2METRE_NAME: r'$^{\circ}$C$^2$',
-    urma_utils.U_WIND_10METRE_NAME: r'm$^2$ s$^{-2}$',
-    urma_utils.V_WIND_10METRE_NAME: r'm$^2$ s$^{-2}$',
-    urma_utils.WIND_GUST_10METRE_NAME: r'm$^2$ s$^{-2}$'
+    target_field_utils.TEMPERATURE_2METRE_NAME: r'$^{\circ}$C$^2$',
+    target_field_utils.DEWPOINT_2METRE_NAME: r'$^{\circ}$C$^2$',
+    target_field_utils.U_WIND_10METRE_NAME: r'm$^2$ s$^{-2}$',
+    target_field_utils.V_WIND_10METRE_NAME: r'm$^2$ s$^{-2}$',
+    target_field_utils.WIND_GUST_10METRE_NAME: r'm$^2$ s$^{-2}$'
 }
 
 FIELD_NAME_TO_CUBED_UNITS = {
-    urma_utils.TEMPERATURE_2METRE_NAME: r'$^{\circ}$C$^3$',
-    urma_utils.DEWPOINT_2METRE_NAME: r'$^{\circ}$C$^3$',
-    urma_utils.U_WIND_10METRE_NAME: r'm$^3$ s$^{-3}$',
-    urma_utils.V_WIND_10METRE_NAME: r'm$^3$ s$^{-3}$',
-    urma_utils.WIND_GUST_10METRE_NAME: r'm$^3$ s$^{-3}$'
+    target_field_utils.TEMPERATURE_2METRE_NAME: r'$^{\circ}$C$^3$',
+    target_field_utils.DEWPOINT_2METRE_NAME: r'$^{\circ}$C$^3$',
+    target_field_utils.U_WIND_10METRE_NAME: r'm$^3$ s$^{-3}$',
+    target_field_utils.V_WIND_10METRE_NAME: r'm$^3$ s$^{-3}$',
+    target_field_utils.WIND_GUST_10METRE_NAME: r'm$^3$ s$^{-3}$'
 }
 
 MARKER_TYPE = 'o'

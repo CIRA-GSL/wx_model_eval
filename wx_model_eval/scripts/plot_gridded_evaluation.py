@@ -14,7 +14,7 @@ from wx_model_eval.outside_code import \
 from wx_model_eval.outside_code import file_system_utils
 from wx_model_eval.outside_code import error_checking
 from wx_model_eval.io import border_io
-from wx_model_eval.utils import urma_utils
+from wx_model_eval.utils import target_field_utils
 from wx_model_eval.utils import evaluation
 from wx_model_eval.plotting import plotting_utils
 from wx_model_eval.plotting import target_plotting
@@ -22,35 +22,35 @@ from wx_model_eval.plotting import target_plotting
 TOLERANCE = 1e-6
 
 TARGET_FIELD_NAME_TO_VERBOSE_UNITLESS = {
-    urma_utils.TEMPERATURE_2METRE_NAME: '2-m temperature',
-    urma_utils.DEWPOINT_2METRE_NAME: '2-m dewpoint',
-    urma_utils.U_WIND_10METRE_NAME: '10-m zonal wind',
-    urma_utils.V_WIND_10METRE_NAME: '10-m meridional wind',
-    urma_utils.WIND_GUST_10METRE_NAME: '10-m wind gust'
+    target_field_utils.TEMPERATURE_2METRE_NAME: '2-m temperature',
+    target_field_utils.DEWPOINT_2METRE_NAME: '2-m dewpoint',
+    target_field_utils.U_WIND_10METRE_NAME: '10-m zonal wind',
+    target_field_utils.V_WIND_10METRE_NAME: '10-m meridional wind',
+    target_field_utils.WIND_GUST_10METRE_NAME: '10-m wind gust'
 }
 
 TARGET_FIELD_NAME_TO_VERBOSE = {
-    urma_utils.TEMPERATURE_2METRE_NAME: r'2-m temperature ($^{\circ}$C)',
-    urma_utils.DEWPOINT_2METRE_NAME: r'2-m dewpoint ($^{\circ}$C)',
-    urma_utils.U_WIND_10METRE_NAME: r'10-m zonal wind (m s$^{-1}$)',
-    urma_utils.V_WIND_10METRE_NAME: r'10-m meridional wind (m s$^{-1}$)',
-    urma_utils.WIND_GUST_10METRE_NAME: r'10-m wind gust (m s$^{-1}$)'
+    target_field_utils.TEMPERATURE_2METRE_NAME: r'2-m temperature ($^{\circ}$C)',
+    target_field_utils.DEWPOINT_2METRE_NAME: r'2-m dewpoint ($^{\circ}$C)',
+    target_field_utils.U_WIND_10METRE_NAME: r'10-m zonal wind (m s$^{-1}$)',
+    target_field_utils.V_WIND_10METRE_NAME: r'10-m meridional wind (m s$^{-1}$)',
+    target_field_utils.WIND_GUST_10METRE_NAME: r'10-m wind gust (m s$^{-1}$)'
 }
 
 TARGET_FIELD_NAME_TO_VERBOSE_SQUARED = {
-    urma_utils.TEMPERATURE_2METRE_NAME: r'2-m temperature ($^{\circ}$C$^2$)',
-    urma_utils.DEWPOINT_2METRE_NAME: r'2-m dewpoint ($^{\circ}$C$^2$)',
-    urma_utils.U_WIND_10METRE_NAME: r'10-m zonal wind (m$^2$ s$^{-2}$)',
-    urma_utils.V_WIND_10METRE_NAME: r'10-m meridional wind (m$^2$ s$^{-2}$)',
-    urma_utils.WIND_GUST_10METRE_NAME: r'10-m wind gust (m$^2$ s$^{-2}$)'
+    target_field_utils.TEMPERATURE_2METRE_NAME: r'2-m temperature ($^{\circ}$C$^2$)',
+    target_field_utils.DEWPOINT_2METRE_NAME: r'2-m dewpoint ($^{\circ}$C$^2$)',
+    target_field_utils.U_WIND_10METRE_NAME: r'10-m zonal wind (m$^2$ s$^{-2}$)',
+    target_field_utils.V_WIND_10METRE_NAME: r'10-m meridional wind (m$^2$ s$^{-2}$)',
+    target_field_utils.WIND_GUST_10METRE_NAME: r'10-m wind gust (m$^2$ s$^{-2}$)'
 }
 
 TARGET_FIELD_NAME_TO_VERBOSE_CUBED = {
-    urma_utils.TEMPERATURE_2METRE_NAME: r'2-m temperature ($^{\circ}$C$^3$)',
-    urma_utils.DEWPOINT_2METRE_NAME: r'2-m dewpoint ($^{\circ}$C$^3$)',
-    urma_utils.U_WIND_10METRE_NAME: r'10-m zonal wind (m$^3$ s$^{-3}$)',
-    urma_utils.V_WIND_10METRE_NAME: r'10-m meridional wind (m$^3$ s$^{-3}$)',
-    urma_utils.WIND_GUST_10METRE_NAME: r'10-m wind gust (m$^3$ s$^{-3}$)'
+    target_field_utils.TEMPERATURE_2METRE_NAME: r'2-m temperature ($^{\circ}$C$^3$)',
+    target_field_utils.DEWPOINT_2METRE_NAME: r'2-m dewpoint ($^{\circ}$C$^3$)',
+    target_field_utils.U_WIND_10METRE_NAME: r'10-m zonal wind (m$^3$ s$^{-3}$)',
+    target_field_utils.V_WIND_10METRE_NAME: r'10-m meridional wind (m$^3$ s$^{-3}$)',
+    target_field_utils.WIND_GUST_10METRE_NAME: r'10-m wind gust (m$^3$ s$^{-3}$)'
 }
 
 RMSE_KEY = 'root_mean_squared_error'
@@ -202,10 +202,7 @@ BY_HOUR_HELP_STRING = (
 ).format(
     BY_MONTH_ARG_NAME
 )
-TARGET_FIELD_HELP_STRING = (
-    'Name of target field for which to plot metrics.  This field name must be '
-    'accepted by `urma_utils.check_field_name`.'
-)
+TARGET_FIELD_HELP_STRING = 'Name of target field for which to plot metrics.'
 METRICS_HELP_STRING = (
     'List of metrics to plot.  Each metric must be in the following list:'
     '\n{0:s}'

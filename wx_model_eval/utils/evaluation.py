@@ -9,9 +9,9 @@ from wx_model_eval.outside_code import \
     temperature_conversions as temperature_conv
 from wx_model_eval.outside_code import file_system_utils
 from wx_model_eval.outside_code import error_checking
-from wx_model_eval.io import urma_io
 from wx_model_eval.io import prediction_io
-from wx_model_eval.utils import urma_utils
+from wx_model_eval.io import normalization_io
+from wx_model_eval.utils import target_field_utils
 
 # TODO(thunderhoser): Allow multiple lead times.
 
@@ -1473,26 +1473,24 @@ def get_scores_with_bootstrapping(
     print('Reading mean (climo) values from: "{0:s}"...'.format(
         target_normalization_file_name
     ))
-    target_norm_param_table_xarray = urma_io.read_normalization_file(
+    target_norm_param_table_xarray = normalization_io.read_normalization_file(
         target_normalization_file_name
     )
     tnpt = target_norm_param_table_xarray
 
     these_indices = numpy.array([
-        numpy.where(tnpt.coords[urma_utils.FIELD_DIM].values == f)[0][0]
+        numpy.where(tnpt.coords[normalization_io.FIELD_DIM].values == f)[0][0]
         for f in target_field_names
     ], dtype=int)
 
     mean_training_target_values = (
-        tnpt[urma_utils.MEAN_VALUE_KEY].values[these_indices]
+        tnpt[normalization_io.MEAN_VALUE_KEY].values[these_indices]
     )
 
-    # TODO(thunderhoser): Modularize this temperature-conversion shit.
     for j in range(len(target_field_names)):
-        if target_field_names[j] not in [
-                urma_utils.TEMPERATURE_2METRE_NAME,
-                urma_utils.DEWPOINT_2METRE_NAME
-        ]:
+        if not target_field_utils.is_actually_stored_in_celsius(
+                target_field_names[j]
+        ):
             continue
 
         mean_training_target_values[j] = temperature_conv.kelvins_to_celsius(

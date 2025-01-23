@@ -7,7 +7,6 @@ from wx_model_eval.outside_code import time_conversion
 from wx_model_eval.outside_code import error_checking
 from wx_model_eval.io import prediction_io
 from wx_model_eval.utils import evaluation
-from wx_model_eval.machine_learning import neural_net
 
 SEPARATOR_STRING = '\n\n' + '*' * 50 + '\n\n'
 HOURS_TO_SECONDS = 3600
@@ -15,6 +14,7 @@ TIME_FORMAT = '%Y-%m-%d-%H'
 
 INPUT_DIR_ARG_NAME = 'input_prediction_dir_name'
 INIT_TIME_LIMITS_ARG_NAME = 'init_time_limit_strings'
+LEAD_TIME_ARG_NAME = 'model_lead_time_hours'  # TODO(thunderhoser): Should be metadata stored in prediction files.
 EVALUATE_MONTH_ARG_NAME = 'evaluate_month'
 EVALUATE_HOUR_ARG_NAME = 'evaluate_hour'
 NUM_BOOTSTRAP_REPS_ARG_NAME = 'num_bootstrap_reps'
@@ -38,6 +38,7 @@ INIT_TIME_LIMITS_HELP_STRING = (
     'List of two initialization times, specifying the beginning and end of the '
     'evaluation period.  Time format is "yyyy-mm-dd-HH".'
 )
+LEAD_TIME_HELP_STRING = 'Model lead time.'
 EVALUATE_MONTH_HELP_STRING = (
     'Will evaluate only forecasts valid in this month (ranging from '
     '1...12).  If you want to evaluate forecasts regardless of month, leave '
@@ -49,13 +50,10 @@ EVALUATE_HOUR_HELP_STRING = (
     'this argument alone.'
 )
 NUM_BOOTSTRAP_REPS_HELP_STRING = 'Number of bootstrap replicates.'
-TARGET_FIELDS_HELP_STRING = (
-    'List of target fields to be evaluated.  Each one must be accepted by '
-    '`urma_utils.check_field_name`.'
-)
+TARGET_FIELDS_HELP_STRING = 'List of target fields to be evaluated.'
 TARGET_NORM_FILE_HELP_STRING = (
     'Path to file with normalization parameters for target fields.  Will be '
-    'read by `urma_io.read_normalization_file`.'
+    'read by `normalization_io.read_normalization_file`.'
 )
 NUM_RELIA_BINS_HELP_STRING = (
     'length-T numpy array with number of bins in reliability curve for each '
@@ -105,6 +103,10 @@ INPUT_ARG_PARSER.add_argument(
 INPUT_ARG_PARSER.add_argument(
     '--' + INIT_TIME_LIMITS_ARG_NAME, type=str, nargs=2, required=True,
     help=INIT_TIME_LIMITS_HELP_STRING
+)
+INPUT_ARG_PARSER.add_argument(
+    '--' + LEAD_TIME_ARG_NAME, type=int, required=False, default=48,
+    help=LEAD_TIME_HELP_STRING
 )
 INPUT_ARG_PARSER.add_argument(
     '--' + EVALUATE_MONTH_ARG_NAME, type=int, required=False, default=-1,
@@ -160,7 +162,7 @@ INPUT_ARG_PARSER.add_argument(
 )
 
 
-def _run(prediction_dir_name, init_time_limit_strings,
+def _run(prediction_dir_name, init_time_limit_strings, model_lead_time_hours,
          evaluate_month, evaluate_hour, num_bootstrap_reps,
          target_field_names, target_normalization_file_name,
          num_relia_bins_by_target, min_relia_bin_edge_by_target,
@@ -173,6 +175,7 @@ def _run(prediction_dir_name, init_time_limit_strings,
 
     :param prediction_dir_name: See documentation at top of file.
     :param init_time_limit_strings: Same.
+    :param model_lead_time_hours: Same.
     :param evaluate_month: Same.
     :param evaluate_hour: Hour.
     :param num_bootstrap_reps: Same.
@@ -242,22 +245,8 @@ def _run(prediction_dir_name, init_time_limit_strings,
         prediction_file_names[0]
     )
     first_ptx = first_prediction_table_xarray
-
     if 'model_lead_time_hours' in first_ptx.attrs:
         model_lead_time_hours = first_ptx.attrs['model_lead_time_hours']
-    else:
-        model_file_name = first_ptx.attrs[prediction_io.MODEL_FILE_KEY]
-        model_metafile_name = neural_net.find_metafile(
-            model_file_name=model_file_name, raise_error_if_missing=True
-        )
-
-        print('Reading model metadata from: "{0:s}"...'.format(
-            model_metafile_name
-        ))
-        model_metadata_dict = neural_net.read_metafile(model_metafile_name)
-        model_lead_time_hours = model_metadata_dict[
-            neural_net.TRAINING_OPTIONS_KEY
-        ][neural_net.TARGET_LEAD_TIME_KEY]
 
     init_times_unix_sec = numpy.array([
         prediction_io.file_name_to_init_time(f) for f in prediction_file_names
@@ -358,6 +347,7 @@ if __name__ == '__main__':
         init_time_limit_strings=getattr(
             INPUT_ARG_OBJECT, INIT_TIME_LIMITS_ARG_NAME
         ),
+        model_lead_time_hours=getattr(INPUT_ARG_OBJECT, LEAD_TIME_ARG_NAME),
         evaluate_month=getattr(INPUT_ARG_OBJECT, EVALUATE_MONTH_ARG_NAME),
         evaluate_hour=getattr(INPUT_ARG_OBJECT, EVALUATE_HOUR_ARG_NAME),
         num_bootstrap_reps=getattr(
