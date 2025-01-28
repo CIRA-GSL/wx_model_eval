@@ -14,7 +14,6 @@ TOLERANCE = 1e-6
 TIME_FORMAT = '%Y-%m-%d-%H'
 
 HOURS_TO_SECONDS = 3600
-DEFAULT_INIT_TIME_INTERVAL_SEC = 6 * HOURS_TO_SECONDS  # TODO(thunderhoser): This will change.
 
 ROW_DIM = 'grid_row'
 COLUMN_DIM = 'grid_column'
@@ -91,7 +90,7 @@ def find_files_for_period(
     init_times_unix_sec = time_periods.range_and_interval_to_list(
         start_time_unix_sec=first_init_time_unix_sec,
         end_time_unix_sec=last_init_time_unix_sec,
-        time_interval_sec=DEFAULT_INIT_TIME_INTERVAL_SEC,
+        time_interval_sec=HOURS_TO_SECONDS,
         include_endpoint=True
     )
 
