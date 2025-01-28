@@ -21,4 +21,4 @@ def read_normalization_file(netcdf_file_name):
     """
 
     error_checking.assert_file_exists(netcdf_file_name)
-    return xarray.open_dataset(netcdf_file_name)\
+    return xarray.open_dataset(netcdf_file_name)
