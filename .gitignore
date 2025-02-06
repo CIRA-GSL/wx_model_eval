@@ -19,4 +19,3 @@ slurm/
 *fuckery*.py
 wx_model_eval/*.py
 wx_model_eval/dead_code/
-wx_model_eval/dead_scratch_code/
